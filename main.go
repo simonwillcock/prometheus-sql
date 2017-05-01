@@ -25,15 +25,19 @@ var (
 )
 
 // Query defines a SQL statement and parameters as well as configuration for the monitoring behavior
-type Query struct {
-	Name       string
-	Driver     string
-	Connection map[string]interface{}
-	SQL        string
-	Params     map[string]interface{}
-	Interval   time.Duration
-	Timeout    time.Duration
-	DataField  string `yaml:"data-field"`
+type Query   struct {
+Name               string
+Driver             string
+Connection         map[string]interface{}
+SQL                string
+Params             map[string]interface{}
+Interval           time.Duration
+Timeout            time.Duration
+DataField          string `yaml:"data-field"`
+DataMetric         string `yaml:"data-metric"`
+DataLabelName         string `yaml:"data-label-name"`
+Labels             []string
+MultiDimensional   bool
 }
 type QueryList []*Query
 
@@ -71,7 +75,14 @@ func decodeQueries(r io.Reader) (QueryList, error) {
 				q.Timeout = DefaultTimeout
 			}
 
+			if q.MultiDimensional == "" {
+				q.MultiDimensional = false
+			}
+
+			q.DataLabelName = strings.ToLower(q.DataLabelName)
 			q.DataField = strings.ToLower(q.DataField)
+			q.DataMetric = strings.ToLower(q.DataMetric)
+
 			queries = append(queries, q)
 		}
 	}
